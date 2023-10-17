@@ -30,6 +30,13 @@ const timeBlocks = [
 function createScheduleTable() {
     const table = document.getElementById('schedule-table');
 
+    const headerRow = document.createElement('tr');
+    headerRow.appendChild(createCell(''));  // Empty cell at the beginning
+    for (let i = 0; i < 24; i++) {
+        headerRow.appendChild(createCell(i.toString()));  // Cells for each hour number
+    }
+    table.appendChild(headerRow);
+
     days.forEach(day => {
         const row = table.insertRow();
 
@@ -41,6 +48,7 @@ function createScheduleTable() {
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.className = 'schedule-checkbox';
+            checkbox.id = `${day}-${time}`;
             checkbox.dataset.day = day;
             checkbox.dataset.timeBlock = time;
             timeCell.appendChild(checkbox);
@@ -65,7 +73,7 @@ document.getElementById('save').addEventListener('click', function () {
     chrome.storage.local.set({ [url]: schedule });
 });
 function loadScheduleForCurrentTab() {
-    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         const url = new URL(tabs[0].url);
         const hostname = url.hostname;
 
@@ -73,14 +81,16 @@ function loadScheduleForCurrentTab() {
         document.getElementById('url').value = hostname;
         console.log("got hostname")
         // Fetch the schedule for this hostname from storage
-        chrome.storage.local.get(hostname, function(result) {
+        chrome.storage.local.get(hostname, function (result) {
             console.log('getting schedule to reload')
             console.log(result);
             const schedule = result[hostname];
             if (schedule) {
                 for (const day in schedule) {
                     schedule[day].forEach(timeBlock => {
-                        const checkbox = document.querySelector(`.schedule-checkbox[data-day="${day}"][data-timeBlock="${timeBlock}"]`);
+                        const checkboxId = `${day}-${timeBlock}`;
+                        const checkbox = document.getElementById(checkboxId);
+
                         if (checkbox) {
                             checkbox.checked = true;
                         }
