@@ -30,18 +30,36 @@ const timeBlocks = [
 function createScheduleTable() {
     const table = document.getElementById('schedule-table');
 
+    // Create header row for hour numbers
     const headerRow = document.createElement('tr');
-    headerRow.appendChild(createCell(''));  // Empty cell at the beginning
+    headerRow.appendChild(createCell(''));  // Empty cell at the beginning for 'Select All'
+    headerRow.appendChild(createCell(''));  // Empty cell at the beginning for 'Select All'
     for (let i = 0; i < 24; i++) {
         headerRow.appendChild(createCell(i.toString()));  // Cells for each hour number
     }
     table.appendChild(headerRow);
 
-    days.forEach(day => {
-        const row = table.insertRow();
+    // Create the rest of the rows
+    days.forEach((day) => {
+        const row = document.createElement('tr');
 
-        const dayCell = row.insertCell(0);
-        dayCell.textContent = day;
+        // Create 'Select All' checkbox for each day
+        const selectAllCell = createCell('');
+        const selectAllCheckbox = document.createElement('input');
+        selectAllCheckbox.type = 'checkbox';
+        selectAllCheckbox.className = 'select-all-checkbox';
+        selectAllCheckbox.id = `${day}-selectAll`;
+        selectAllCheckbox.style.fontWeight = 'bold';
+        selectAllCell.appendChild(selectAllCheckbox);
+        row.appendChild(selectAllCell);
+
+        // Adding listener to 'Select All' checkbox
+        selectAllCheckbox.addEventListener('change', function () {
+            const checkboxes = row.querySelectorAll('.schedule-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+        });
+
+        row.appendChild(createCell(day));  // Create a cell for the day name
 
         timeBlocks.forEach(time => {
             const timeCell = row.insertCell();
@@ -53,8 +71,17 @@ function createScheduleTable() {
             checkbox.dataset.timeBlock = time;
             timeCell.appendChild(checkbox);
         });
+
+        table.appendChild(row);
     });
 }
+
+function createCell(text) {
+    const cell = document.createElement('td');
+    cell.innerText = text;
+    return cell;
+}
+
 
 document.getElementById('save').addEventListener('click', function () {
     const url = document.getElementById('url').value;
